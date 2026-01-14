@@ -2,1493 +2,409 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2025 我们的独家记忆</title>
-   <style>
-        /* --- 1. 全局资源与字体 --- */
-        @font-face {
-            font-family: 'HongLeiZhuoShu';
-            src: url('鸿雷拙书简体 HongLeiZhuoShuJianTi.ttf'); 
-            font-weight: normal; font-style: normal;
-        }
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>年度互动总结</title>
+    <style>
+        /* ========================================= */
+        /* === 适配 iPhone 16 Pro 核心设置 === */
+        /* ========================================= */
         :root {
-            /* 莫兰迪色系调整 */
-            --bg-color: #EBE9E4;       /* 米灰背景 */
-            --text-main: #585c5f;      /* 深灰字 */
-            --text-date: #8fa0a5;      /* 雾霾蓝 */
-            --wechat-green: #95ec69;   /* 微信绿 */
-            --suitcase-body: #7d6e64;  /* 行李箱深咖色 */
-            --suitcase-light: #9c8b80; /* 行李箱浅色 */
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --accent-red: #b67e75;     /* 重点砖红 */
-            
-            /* iPhone 安全区域变量 */
-            --safe-top: env(safe-area-inset-top, 20px);
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-top: max(20px, env(safe-area-inset-top));
+            --safe-bottom: max(20px, env(safe-area-inset-bottom));
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body {
-            background-color: var(--bg-color);
-            font-family: "Songti SC", "Noto Serif SC", "Times New Roman", serif;
-            height: 100vh;
-            /* 禁止 iOS 回弹露出背景 */
-            overscroll-behavior: none;
-            display: flex; flex-direction: column; overflow: hidden; color: var(--text-main); position: relative;
+        body { 
+            background-color: #EBE9E4; 
+            font-family: "Songti SC", "Noto Serif SC", serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            overscroll-behavior: none; 
         }
-       .gentle-next{
-    position:absolute;
-    bottom:calc(70px + var(--safe-bottom));
-    left:50%;
-    transform:translateX(-50%);
-    padding:6px 24px;
-    background:rgba(235,233,228,.45);
-    border:0.5px solid rgba(88,92,95,.25);
-    border-radius:20px;
-    font-size:14px;
-    color:var(--text-main);
-    letter-spacing:1px;
-    cursor:pointer;
-    opacity:0;                 /* 关键：彻底透明 */
-    pointer-events:none;
-    transition:opacity .6s, background .4s;
-}
-.gentle-next.show{
-    opacity:0.7;               /* 需要显示时才给到 0.7 */
-    pointer-events:all;
-}
-.gentle-next:active{
-    background:rgba(235,233,228,.85);
-    opacity:1;
-}
-        /* ========================================= */
-        /* === 页面切换基础架构 === */
-        /* ========================================= */
+
         .page {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: var(--bg-color);
-            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.8s ease;
-            z-index: 1; opacity: 0; pointer-events: none;
-            
-            /* 适配刘海屏 */
-            padding-top: var(--safe-top);
-            padding-bottom: var(--safe-bottom);
+            overflow: hidden; background-color: #EBE9E4;
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.8s ease;
+            opacity: 0; pointer-events: none; z-index: 1;
+            display: flex; flex-direction: column; align-items: center;
         }
+        .page.active { opacity: 1; z-index: 10; pointer-events: all; }
 
-        .page.active, #page-2.active { opacity: 1; transform: translateY(0); z-index: 10; pointer-events: all; }
-        .page.leave { transform: translateY(-100%); opacity: 0.5; }
-
-        /* ========================================= */
-        /* === 第一页样式：聊天与标题 === */
-        /* ========================================= */
-        #page-1 { z-index: 2; display: flex; flex-direction: column; }
-        
-        #header-area {
-            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
-            text-align: right; padding: 20px 25px; z-index: 10;
-        }
-        .header-row { opacity: 0; transition: opacity 1.5s ease; } .header-row.active { opacity: 1; }
-        .header-row-1 { opacity: 0; margin-bottom: 15px; display: flex; align-items: center; justify-content: flex-end; transition: opacity 0.8s ease; } .header-row-1.active { opacity: 1; }
-        .char-span { opacity: 0; display: inline-block; transition: opacity 0.1s; } .char-span.show { opacity: 1; }
-        .header-time { font-family: "Times New Roman", serif; font-size: 36px; letter-spacing: 1px; }
-        .header-icon { font-size: 24px; margin-right: 10px; opacity: 0.8; }
-        .header-sep { width: 160px; height: 0.5px; background: rgba(88,92,95,0.3); margin-bottom: 15px; }
-        .header-quote { font-family: "HongLeiZhuoShu", "鸿雷拙书", cursive; font-size: 30px; margin-bottom: 10px; letter-spacing: 2px; }
-        .header-loc { font-size: 20px; color: #a0a0a0; 
-            /* font-family: "HongLeiZhuoShu";  */
-            letter-spacing: 1px; }
-        #row-3{margin-bottom: 15px;}
-        
-        /* 聊天区适配 */
-        #chat-container {
-            height: 60vh; overflow-y: auto; 
-            padding: 20px 15px calc(60px + var(--safe-bottom)) 15px;
-            scrollbar-width: none;
-            mask-image: linear-gradient(to bottom, transparent, black 10%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%);
-        }
-        .message-row { display: flex; margin-bottom: 15px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; } .message-row.show { opacity: 1; transform: translateY(0); }
-        .avatar { width: 42px; height: 42px; border-radius: 6px; background-size: cover; margin: 0 10px; flex-shrink: 0; }
-        .bubble { max-width: 75%; padding: 10px 14px; border-radius: 6px; font-size: 16px; line-height: 1.5; position: relative; }
-        .message-row.left .avatar { background-image: url('./img/wxy微信头像.jpg'); margin-left: 0;} .message-row.left .bubble { background: #fff; } .message-row.left .bubble::before { content:''; position:absolute; left:-8px; top:14px; border:4px solid transparent; border-right-color:#fff; }
-        .message-row.right { justify-content: flex-end; } .message-row.right .avatar { background-image: url('./img/我的微信头像.jpg'); margin-right: 0; order: 2;} .message-row.right .bubble { background: var(--wechat-green); order: 1;} .message-row.right .bubble::after { content:''; position:absolute; right:-8px; top:14px; border:4px solid transparent; border-left-color:var(--wechat-green); }
-
-        /* 底部栏适配 */
-        .footer-bar { 
-            position: fixed; bottom: 0; left: 0; width: 100%; 
-            height: calc(60px + var(--safe-bottom)); 
-            padding-bottom: var(--safe-bottom);
-            background: rgba(235, 233, 228, 0.9); backdrop-filter: blur(10px); 
-            display: flex; align-items: center; padding-left: 15px; padding-right: 15px; 
-            z-index: 100; border-top: 1px solid rgba(0,0,0,0.05); 
-        }
-        .input-mock { flex: 1; height: 38px; background: #fff; border-radius: 6px; margin: 0 10px; } .icon { width: 26px; opacity: 0.6; }
-
-        /* 语音弹窗适配 */
-        #call-banner { 
-            position: fixed; top: calc(10px + var(--safe-top)); left: 10px; right: 10px; height: 80px; 
-            background: rgba(35,35,35,0.95); backdrop-filter: blur(20px); border-radius: 16px; 
-            display: flex; align-items: center; padding: 0 15px; color: white; 
-            transform: translateY(-200%); transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 999; 
-        }
-        #call-banner.active { transform: translateY(0); }
-        .banner-avatar { width: 48px; height: 48px; border-radius: 8px; background-image: url('./img/wxy微信头像.jpg'); background-size: cover; margin-right: 12px; } .banner-info { flex: 1; } .banner-name { font-weight: 600; } .banner-status { font-size: 13px; opacity: 0.7; } .banner-actions { display: flex; gap: 5px; } .action-circle { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center;margin-right: 25px;  } .bg-red { background: #ff3b30; } .bg-green { background: #34c759; } .phone-icon { width: 20px; height: 3px; background: white; border-radius: 2px; }
-
-        /* Toast 适配 */
-        #top-toast { 
-            position: fixed; top: calc(100px + var(--safe-top)); right: 20px; 
-            background: rgba(255,255,255,0.95); padding: 8px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transform: translateY(10px); transition: 0.4s; pointer-events: none; z-index: 1000; 
-        }
-        #top-toast.show { opacity: 1; transform: translateY(0); }
-
-
-        /* ========================================= */
-        /* === 第二页：足迹行李箱 (iPhone 16P 适配) === */
-        /* ========================================= */
-        #page-2 {
-            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
-            background-color: #F8F5DD;
-            padding-top: calc(20px + var(--safe-top));
-        }
-
-        /* --- 卡片区域适配 --- */
-        .stats-container {
-            position: absolute;
-            /* 避开灵动岛，使用 vh 适配长屏幕 */
-            top: calc(8vh + var(--safe-top));
-            width: 100%; padding: 0 30px;
-            display: flex; flex-direction: column; gap: 20px; z-index: 20;
-        }
-
-        .stat-card {
-            background-color: #E4C391; 
-            backdrop-filter: blur(10px); border-radius: 12px; padding: 15px 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            display: flex; align-items: center; justify-content: space-between;
-            opacity: 0; transform: translateY(-20px); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .stat-card.show { opacity: 1; transform: translateY(0); }
-
-        .card-icon { font-size: 24px; margin-right: 15px; width: 30px; text-align: center; }
-        .card-info { flex: 1; }
-        .card-label { font-size: 18px; color: #121111; font-weight: 500; margin-bottom: 4px; }
-        .card-value { font-size: 22px; font-weight: bold; color: #0b0b0b; font-family: "HongLeiZhuoShu", serif; letter-spacing: 1px; line-height: 1.2; }
-        .card-highlight { color: #7e1c0d; }
-
-        /* --- 吐槽文字适配 --- */
-        .cheeky-comment {
-            position: absolute;
-            /* 在长屏幕上自动下移，避免和卡片重叠 */
-            top: 10vh; 
-            right: auto; left: 10%;
-            text-align: left;
-            font-family: "HongLeiZhuoShu", serif; color: #A5B8E0; font-size: 38px; line-height: 1.5; white-space: nowrap;
-            opacity: 0; transform-origin: bottom left; transform: rotate(-2deg) scale(0.9); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        .cheeky-comment.show { opacity: 1; transform: rotate(-2deg) scale(1); }
-
-        /* --- 行李箱适配 --- */
-        .suitcase-wrapper {
-            position: relative;
-            /* 宽度改用 vw 适配 iPhone 16P 宽屏 */
-            width: 85vw; max-width: 360px;
-            height: 100vw; max-height: 420px;
-            /* 避开底部横条 */
-            margin-bottom: calc(-30px + var(--safe-bottom));
-            transform: translateY(100%); transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .suitcase-wrapper.show { transform: translateY(0); }
-
-        /* 行李箱内部保持百分比布局 */
-        .handle-bar { width: 46%; height: 26%; border: 8px solid #5a4a42; border-bottom: none; border-radius: 10px 10px 0 0; position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 1; }
-        .suitcase-body { position: absolute; bottom: 12%; left: 0; width: 100%; height: 68%; background-color: var(--suitcase-body); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 5; overflow: hidden; border: 2px solid #5a4a42; }
-        .suitcase-stripe { position: absolute; top: 0; bottom: 0; width: 6%; background-color: rgba(0,0,0,0.1); }
-        .stripe-left { left: 15%; } .stripe-right { right: 15%; }
-        .hand-grip { position: absolute; top: -4%; left: 50%; transform: translateX(-50%); width: 26%; height: 8%; background: #3e332d; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; }
-        .corner { position: absolute; width: 12%; height: 12%; background: #5a4a42; opacity: 0.8; }
-        .c-tl { top: 0; left: 0; border-bottom-right-radius: 100%; } .c-tr { top: 0; right: 0; border-bottom-left-radius: 100%; } .c-bl { bottom: 0; left: 0; border-top-right-radius: 100%; } .c-br { bottom: 0; right: 0; border-top-left-radius: 100%; }
-
-        /* --- 贴纸样式 (合并整理) --- */
-        .sticker {
-            position: absolute; background: rgba(255, 255, 255, 0); 
-            /* 制造邮票花边 */
-            /* padding: 2px; border: 5px dotted #e0e0e0; border-radius: 2px;  */
-            /* box-shadow: 2px 3px 5px rgba(0,0,0,0.15); */
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; transform: scale(2); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .sticker.show { opacity: 1; }
-        
-        .sticker img {
-            width: 100%; height: 100%; object-fit: cover; 
-            border-radius: 2px; margin: 0; display: block;
-        }
-
-        /* --- 8个贴纸的定制布局 (位置改用 %) --- */
-        
-        /* 1. 函馆 (左上偏中) */
-        .sticker-1 { top: 10%; left: 10%; transform: rotate(-15deg) scale(0); z-index: 12; width: 100px; height: 100px; background: transparent; border: 0; }
-        .sticker-1.show { transform: rotate(-15deg) scale(1); }
-        .sticker-1 img { width: 120%; height: 120%; } /* 特殊图片放大 */
-
-        /* 2. 札幌 (右上) */
-        .sticker-2 { top: 15%; right: -20%; transform: rotate(12deg) scale(0); z-index: 1; background: transparent; border: 0; }
-        .sticker-2.show { transform: rotate(12deg) scale(1); }
-        .sticker-2 img { width: 30%; height: 30%; }
-
-        /* 3. 小樽（左下） */
-        .sticker-3 { bottom: 5%; left: -40%; margin-left: -80px; transform: rotate(-3deg) scale(0); background: #b67e7500; color: white; border-color: #b67e7500; z-index: 10;  }
-        .sticker-3 img { width: 20%; height: 20%; }
-        .sticker-3.show { transform: rotate(-3deg) scale(1); }
-
-        /* 4. 东京 (左中) */
-        .sticker-4 { top: 60%; RIGHT:-60%; transform: rotate(5deg) scale(0); z-index: 3; background: transparent; border: 0; }
-        .sticker-4.show { transform: rotate(5deg) scale(1); }
-        .sticker-4 img { width: 15%; height: 15%; }
-        
-        /* 5. 广州 (正中间) */
-        .sticker-5 { top: 50%; left: 10%; transform: rotate(-8deg) scale(0); z-index: 4; background: transparent;}
-        .sticker-5.show { transform: rotate(-8deg) scale(1); }
-        .sticker-5 img { width: 30%; height: 30%; }
-        /* 6. 深圳 (右下) */
-        .sticker-6 { bottom: 30%;left:-50%; transform: rotate(15deg) scale(0); z-index: 10;  background: transparent; }
-        .sticker-6.show { transform: rotate(15deg) scale(1); }
-        .sticker-6 img { width: 10%; height: 10%; }
-        /* 7. 香港 (右上偏下) */
-        .sticker-7 { top: 35%; right: -60%; transform: rotate(-10deg) scale(0); z-index: 3; }
-        .sticker-7.show { transform: rotate(-7deg) scale(1); }
-        .sticker-7 img { width: 15%; height: 15%;} 
-        /* 8.北京 */
-        .sticker-8 { top: 5%; RIGHT: 10%; transform: rotate(2deg) scale(0); z-index: 1; width: 70px; height: 70px; }
-        .sticker-8.show { transform: rotate(2deg) scale(1); }
-
-        /* ========================================= */
-        /* === 第三页：深夜弹幕 (本次新增) === */
-        /* ========================================= */
-
-      #page-3 { overflow: hidden; position: relative; }
-
-        /* 1. 弹幕层 (底层) */
-        #danmu-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: all;
-        }
-        .danmu-item {
-            position: absolute; white-space: nowrap; font-size: 14px;
-            color: rgba(60, 60, 60, 0.6); /* 稍微淡一点，别抢九宫格戏 */
-            font-family: "Songti SC", serif; cursor: pointer;
-            left: 100%; transition: color 0.3s;
-        }
-        .danmu-item.paused { 
-            animation-play-state: paused !important; z-index: 100; 
-            color: var(--accent-red); opacity: 1; font-weight: bold; 
-        }
-        @keyframes floatLeft { from { transform: translateX(0); } to { transform: translateX(-150vw); } }
-
-        /* 2. 核心内容容器 (上层) */
-        .identity-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 10; pointer-events: none; /* 让空白处不挡弹幕 */
-            
-        }
-
-        /* 标题区域 */
-        .page3-header {
-            text-align: center; margin-bottom: 30px; 
-            opacity: 0; transform: translateY(20px); transition: all 0.8s ease;
-            pointer-events: auto;
-        }
-        .p3-title { font-size: 16px; color: #555; margin-bottom: 8px; letter-spacing: 1px; }
-        .p3-main-text { 
-            font-family: "HongLeiZhuoShu", serif; font-size: 26px; color: var(--text-main); 
-            line-height: 1.4; padding: 0 20px;
-        }
-        .p3-main-text span { color: var(--accent-red); font-size: 32px; margin: 0 5px; }
-        .p3-sub-text { 
-            font-size: 12px; color: #888; margin-top: 20px; 
-            background: rgba(255,255,255,0.6); padding: 5px 15px; border-radius: 20px;
-            display: inline-block;
-        }
-
-        /* 3. 九宫格区域 */
-        .grid-box {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            width: 85vw; max-width: 360px;
-            pointer-events: auto;
-        }
-
-        .id-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(5px);
-            aspect-ratio: 1; /* 正方形 */
-            border-radius: 12px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0; transform: scale(0.5); /* 初始隐藏 */
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .id-card.show { opacity: 1; transform: scale(1); }
-        .id-card:active { transform: scale(0.95); background: #f0f0f0; }
-
-        .id-icon { font-size: 24px; margin-bottom: 5px; }
-        .id-name { font-size: 13px; color: #333; font-weight: 500; text-align: center;}
-
-        /* --- 弹窗样式 (Chat Modal) --- */
-        #chat-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            z-index: 999;
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
-        #chat-modal.active { opacity: 1; pointer-events: all; }
-
-        .modal-content {
-            width: 85vw; max-width: 340px;
-            background: #F5F5F5;
-            border-radius: 12px;
-            overflow: hidden;
-            transform: scale(0.9); transition: transform 0.3s;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-        #chat-modal.active .modal-content { transform: scale(1); }
-
-        /* 模拟微信窗口 */
-        .wx-header {
-            background: #EDEDED; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid #dcdcdc; font-size: 15px; font-weight: 600; color: #000;
-        }
-        .wx-close { font-size: 20px; color: #333; cursor: pointer; padding: 0 5px; }
-        
-        .wx-body {
-            padding: 20px 15px;
-            max-height: 50vh; overflow-y: auto;
-        }
-        
-        /* 弹窗里的气泡样式 */
-        .wx-msg { display: flex; margin-bottom: 15px; }
-        .wx-msg.right { justify-content: flex-end; }
-        .wx-avatar { width: 36px; height: 36px; border-radius: 4px; background-color: #ddd; flex-shrink: 0; background-size: cover; }
-        .wx-msg.left .wx-avatar { margin-right: 10px; background-image: url('./img/wxy微信头像2.jpg'); }
-        .wx-msg.right .wx-avatar { margin-left: 10px; order: 2; background-image: url('./img/我的微信头像2.jpg'); }
-        .wx-bubble { 
-            max-width: 70%; padding: 9px 12px; border-radius: 4px; font-size: 15px; line-height: 1.4; position: relative; color: #000;
-        }
-        .wx-msg.left .wx-bubble { background: #fff; border: 1px solid #ededed; }
-        .wx-msg.right .wx-bubble { background: #95ec69; order: 1; border: 1px solid #8ad961; }
-        
-        /* 气泡小三角 */
-        .wx-msg.left .wx-bubble::before { content:''; position:absolute; left:-6px; top:12px; border:3px solid transparent; border-right-color:#fff; }
-        .wx-msg.right .wx-bubble::after { content:''; position:absolute; right:-6px; top:12px; border:3px solid transparent; border-left-color:#95ec69; }
-
-        .time-tip { text-align: center; font-size: 12px; color: #ccc; margin-bottom: 15px; }
-    
-        /* ========================================= */
-        /* === 第四页样式：视频与浮动文字 === */
-        /* ========================================= */
-       /* ========================================= */
-        /* === 第四页样式：莫兰迪色系与富士山展排版 === */
-        /* ========================================= */
-        /* ========================================= */
-        /* === 第四页样式：暖调莫兰迪 & 漂浮动效 === */
-        /* ========================================= */
-        .p4-layout-ref {
-            display: flex; flex-direction: column;
-            background-color: #F5F1E8; /* 杏仁奶油背景 */
-            padding-top: calc(50px + var(--safe-top));
+        /* 统一容器：适配 iPhone 16 Pro */
+        .container-responsive {
+            width: 100%; 
+            max-width: 440px; 
+            height: 100%;
+            padding: calc(20px + var(--safe-top)) 25px calc(30px + var(--safe-bottom));
+            display: flex; 
+            flex-direction: column; 
             align-items: center;
-            color: #4A4A4A;
+            justify-content: space-between; 
         }
 
-        /* --- 视频区域 --- */
-        .p4-video-container {
-            width: 88%; max-width: 360px;
-            aspect-ratio: 4/3; /* 稍微方一点，复古比例 */
-            margin-bottom: 20px; z-index: 10;
-            opacity: 0; transform: scale(0.95); transition: 1s ease;
-        }
-        .p4-video-container.show { opacity: 1; transform: scale(1); }
+        /* ... (前几页样式保持不变，为了节省篇幅，这里折叠了 Page 5 和 Page 6 的具体样式) ... */
+        /* 请保留原有的 .p5-*, .p6-*, .radar-* 等样式 */
+        /* ========================================= */
+        /* === (在此处插入你之前已有的 Page 5/6 CSS) === */
+        /* ========================================= */
+        /* 为了演示完整性，我把 P5/P6 关键样式简化放这里，实际使用请用你上一个版本完整的 CSS */
+        .p5-header, .p6-header { text-align: center; margin-bottom: 1vh; flex-shrink: 0; }
+        .p5-stat-line { font-size: 17px; margin-bottom: 8px; color: #585c5f; }
+        .big-num { font-family: "Times New Roman", serif; font-size: 30px; font-weight: bold; color: #b67e75; }
+        .highlight-text { background: rgba(182, 126, 117, 0.15); padding: 2px 6px; border-radius: 4px; color: #a05c52; font-weight: bold; }
+        .p5-comment { margin-top: 15px; font-size: 15px; color: #8fa0a5; font-style: italic; background: #fff; padding: 12px; border-radius: 10px; }
+        .radar-wrapper, .p6-calendar-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .radar-box { width: 75vw; height: 75vw; max-width: 340px; }
+        .radar-svg { width: 100%; height: 100%; overflow: visible; }
+        .radar-grid { fill: none; stroke: #d4ccc3; } 
+        .radar-data-shape { fill: rgba(182, 126, 117, 0.4); stroke: #b67e75; stroke-width: 2.5; transform: scale(0); transition: 1.5s; }
+        .radar-box.show .radar-data-shape { transform: scale(1); }
+        .niu-memory-card { width: 100%; background: #fff; border-radius: 16px; padding: 20px; display: flex; box-shadow: 0 10px 30px rgba(0,0,0,0.06); margin-bottom: 2vh; }
+        .niu-text-col { flex: 1; } .niu-img-box { width: 85px; height: 85px; border-radius: 10px; background: #ddd; margin-left: 15px; }
+        .niu-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .p6-title { font-family: "HongLeiZhuoShu", serif; font-size: 36px; margin-bottom: 10px; color: #333; }
+        .p6-sub { font-size: 16px; line-height: 1.6; color: #666; margin-bottom: 15px; }
+        .highlight-big { font-family: "Times New Roman", serif; font-size: 24px; font-weight: bold; color: #b67e75; margin: 0 3px; }
+        .p6-calendar-box { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5vh 10px; }
+        .month-block { display: flex; flex-direction: column; align-items: center; }
+        .days-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+        .day-dot { width: 6px; height: 6px; background: #dcdcdc; border-radius: 50%; }
+        .day-dot.met { background: #b67e75; transform: scale(1.5); }
+        .p6-footer { text-align: center; font-family: "HongLeiZhuoShu"; font-size: 18px; color: #888; margin-bottom: 20px; }
+        .replay-btn { padding: 14px 36px; background: #585c5f; color: #fff; border-radius: 40px; }
+        .next-arrow { font-size: 28px; cursor: pointer; animation: bounce 2s infinite; color: #b67e75; padding: 10px; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+        .p5-up, .p6-up, .p7-up { opacity: 0; transform: translateY(20px); transition: 0.8s ease; }
+        .show { opacity: 1; transform: translateY(0) scale(1); }
+        .delay-1 { transition-delay: 0.2s; } .delay-2 { transition-delay: 0.4s; } .delay-3 { transition-delay: 0.6s; } .delay-4 { transition-delay: 0.8s; } .delay-5 { transition-delay: 1.0s; } .delay-6 { transition-delay: 1.2s; } .delay-7 { transition-delay: 1.4s; }
 
-        .video-box {
-            width: 100%; height: 100%;
-            border-radius: 6px; overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1); /* 柔和阴影 */
-            background: #000;
-        }
-        .video-box video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* --- 下方布局容器 (左右分栏) --- */
-        .p4-content-area {
-            width: 100%; padding: 0 30px;
-            display: flex; justify-content: space-between;
-            flex: 1; position: relative;
-        }
-
-        /* --- 左侧漂浮区 --- */
-        .p4-float-zone {
-            width: 30%; position: relative; height: 200px;
-        }
-        .floater {
-            position: absolute; font-size: 24px; opacity: 0;
-            animation: floatLoop 6s infinite ease-in-out;
-        }
-        /* 给每个图标不同的位置和动画节奏 */
-        .f1 { top: 60%; left: 10%; animation-delay: 0s; font-size: 28px; }
-        .f2 { top: 30%; left: 40%; animation-delay: 2s; font-size: 22px; }
-        .f3 { top: 80%; left: 50%; animation-delay: 4s; font-size: 26px; }
-        .f4 { top: 40%; left: 0%;  animation-delay: 1.5s; font-size: 20px; }
+        /* ========================================= */
+        /* === 第七页样式：地图汇聚 (修正版) === */
+        /* ========================================= */
         
-        .page.active .floater { opacity: 0.6; } /* 激活时才显示 */
-
-        @keyframes floatLoop {
-            0%   { transform: translateY(0px) rotate(0deg); }
-            50%  { transform: translateY(-20px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-
-        /* --- 右侧文字区 (右对齐) --- */
-        .p4-text-col {
-            width: 70%; display: flex; flex-direction: column; align-items: flex-end;
-            text-align: right;
-            padding-top: 10px;
-        }
-
-        /* 动画基础类 */
-        .p4-slide-up { 
-            opacity: 0; transform: translateY(20px); 
-            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        .p4-slide-up.show { opacity: 1; transform: translateY(0); }
-
-        /* 文字样式细节 */
-        .p4-date-row { 
-            font-family: "Times New Roman", serif; 
-            color: #8F9185; /* 鼠尾草绿 */
-            margin-bottom: 5px; 
-            border-bottom: 2px solid #D8D4C8;
-            padding-bottom: 5px; display: inline-block;
-        }
-        .date-big { font-size: 30px; font-weight: bold; margin-right: 8px; }
-        .time-big { font-size: 30px; }
-
-        .p4-main-q {
-            /* font-family: "HongLeiZhuoShu", serif; */
-            font-size: 24px; color: #4A4A4A;
-            margin-top: 10px; margin-bottom: 5px;
-            line-height: 1.3;
-        }
-
-        .p4-desc-row {
-            /* font-family: "HongLeiZhuoShu", serif; */
-            font-size: 20px; color: #787878;
-            margin-bottom: 15px;
-        }
-
-        .p4-stat-row {
-            font-size: 16px; color: #4A4A4A;
-            background: rgba(255,255,255,0.4);
-            padding: 5px 10px; border-radius: 4px;
+        .p7-map-area {
+            width: 100%; flex: 1; 
+            display: flex; justify-content: center; align-items: center;
+            position: relative;
+            /* 给地图留出足够空间 */
+            margin-top: 20px;
             margin-bottom: 20px;
         }
-        .stat-num {
-            font-family: "Times New Roman", serif;
-            font-size: 26px; font-weight: bold;
-            color: #B07D62; /* 陶土红 */
-            margin: 0 4px;
+        .p7-map-svg {
+            width: 100%; height: 100%; overflow: visible;
+            max-width: 400px; /* 限制最大宽度 */
         }
 
-        .p4-tips { font-size:18px; color: #9A8C98; }
+        /* 地图底图轮廓 */
+        .china-map-outline {
+            fill: #e6e2d8; /* 比背景稍深的米色 */
+            stroke: #fff;
+            stroke-width: 2;
+            opacity: 0; transition: opacity 1.5s ease;
+        }
+        .page.active .china-map-outline { opacity: 1; }
 
-        /* 底部箭头 */
-        .next-arrow {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            font-size: 24px; animation: bounce 2s infinite; opacity: 0.5; cursor: pointer;
+        /* 地名标签 */
+        .map-label {
+            font-family: "HongLeiZhuoShu", serif; font-size: 14px; fill: #8fa0a5; font-weight: bold;
+            opacity: 0; transition: opacity 0.8s;
+        }
+        .label-hk { fill: #b67e75; font-size: 18px; } /* 香港特别标注 */
+
+        /* 路径线 */
+        .route-line {
+            fill: none; stroke: #d4ccc3; stroke-width: 2;
+            stroke-dasharray: 4 4;
+            opacity: 0; transition: opacity 1s;
+        }
+        .page.active .route-line { opacity: 1; }
+
+        /* 移动物体 */
+        .moving-obj {
+            offset-anchor: center;
+            opacity: 0; 
+        }
+        
+        /* 1. 飞机动画：从北京(右上) -> 香港(左下) */
+        /* 贝塞尔曲线：起点(200,80) 控制点(220, 200) 终点(185,275) */
+        #plane-obj {
+            offset-path: path("M 200 80 Q 220 200 185 275");
+            offset-rotate: auto 135deg; /* 调整飞机初始角度 */
+        }
+        
+        /* 2. 地铁动画：从深圳(左下) -> 香港(下) */
+        /* 直线：起点(180,260) 终点(185,275) */
+        #metro-obj {
+            offset-path: path("M 180 260 L 185 275");
+            offset-rotate: auto;
         }
 
-        /* ---------- 第 5 页：年度见面日历 ---------- */
-.p5-calendar-ref{
-  display: flex; flex-direction: column; align-items: center;
-  background: #F5F1E8; /* 杏仁奶油 */
-  padding-top: calc(50px + var(--safe-top));
-  color: var(--text-main);
-}
+        @keyframes moveAlongPath {
+            0% { offset-distance: 0%; opacity: 1; }
+            100% { offset-distance: 100%; opacity: 1; }
+        }
 
-.p5-header{ text-align: center; margin-bottom: 35px; }
-.p5-title-main{ font-family: "HongLeiZhuoShu", serif; font-size: 28px; letter-spacing: 2px; }
-.p5-sub{ font-size: 14px; color: #888; margin-top: 8px; }
+        /* 汇聚爱心 */
+        .meet-heart {
+            font-size: 24px; opacity: 0; transform: scale(0);
+            transform-origin: 185px 275px;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .meet-heart.show { opacity: 1; transform: scale(1.5); }
 
-.p5-grid{
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);   /* 3 列 */
-  gap: 20px;
-  width: 85vw; max-width: 360px;
-}
+        /* 文字内容区 */
+        .p7-text-content {
+            width: 100%; 
+            display: flex; flex-direction: column; gap: 12px;
+            text-align: left;
+            flex-shrink: 0; /* 防止被压缩 */
+        }
+        .p7-title { font-family: "HongLeiZhuoShu", serif; font-size: 26px; color: #333; margin-bottom: 5px; }
+        .p7-time { font-size: 14px; color: #888; line-height: 1.5; border-left: 3px solid #b67e75; padding-left: 10px; }
+        .p7-body { font-size: 16px; color: #585c5f; line-height: 1.6; }
+        .p7-quote-box {
+            background: #fff; padding: 15px; border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            text-align: center; margin: 10px 0;
+        }
+        .p7-line { font-family: "HongLeiZhuoShu"; font-size: 20px; color: #333; margin: 5px 0; }
+        .highlight-red { color: #b67e75; font-weight: bold; }
+        .p7-sub { font-size: 13px; color: #8fa0a5; text-align: right; font-style: italic; }
 
-.month-card{
-  background: rgba(255,255,255,.7);
-  border-radius: 12px;
-  padding: 15px 10px 10px;
-  text-align: center;
-  opacity: 0; transform: scale(.8);
-  transition: all .6s cubic-bezier(.34,1.56,.64,1);
-}
-.month-card.show{ opacity: 1; transform: scale(1); }
-
-.month-name{ font-size: 15px; margin-bottom: 10px; color: #666; }
-
-.days{
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  justify-items: center;
-}
-
-.day{
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: #ddd; /* 没见过的灰 */
-  transition: background .4s;
-}
-.day.met{ background: #97190b; } /* 见过的高亮 */
     </style>
 </head>
 <body>
 
-    <section id="page-1" class="page active">
-          
-        <div id="header-area">
-             <div id="row-3" class="header-row">
-                <span class="header-icon">🌙</span>
-                <span class="header-time">1月 15日 01:00 AM</span>
+    <section id="page-5" class="page">
+        <div class="container-responsive">
+            <div class="p5-header">
+                <div class="p5-stat-line p5-up">2025年，我们一共饭叙 <span class="big-num">22</span> 次</div>
+                <div class="p5-stat-line p5-up delay-1">其中有 <span class="highlight-text">13次</span> 都在吃日式料理 🍣</div>
+                <div class="p5-stat-line p5-up delay-2">我们的友谊成分里 <span class="highlight-text">27.27%</span> 都是拉面 🍜</div>
+                <div class="p5-comment p5-up delay-3">“千变万变，日本拉面”</div>
             </div>
-            <div class="header-row-1">
-                <span id="type-target" class="header-quote">“不论几点，等你落地。”</span>
+            <div class="radar-wrapper">
+                <div class="radar-box p5-scale-in delay-4">
+                    <svg viewBox="0 0 200 200" class="radar-svg">
+                        <polygon points="100,20 162,50 178,118 135,172 65,172 22,118 38,50" class="radar-grid" />
+                        <polygon points="100,60 131,75 139,109 117,136 83,136 61,109 69,75" class="radar-grid inner" />
+                        <line x1="100" y1="100" x2="100" y2="20" class="radar-axis" />
+                        <line x1="100" y1="100" x2="162" y2="50" class="radar-axis" />
+                        <line x1="100" y1="100" x2="178" y2="118" class="radar-axis" />
+                        <line x1="100" y1="100" x2="135" y2="172" class="radar-axis" />
+                        <line x1="100" y1="100" x2="65" y2="172" class="radar-axis" />
+                        <line x1="100" y1="100" x2="22" y2="118" class="radar-axis" />
+                        <line x1="100" y1="100" x2="38" y2="50" class="radar-axis" />
+                        <polygon points="100,20 115,88 112,103 103,105 97,105 94,101 95,96" class="radar-data-shape" />
+                        <circle cx="100" cy="20" r="3" class="radar-point" /><circle cx="115" cy="88" r="3" class="radar-point" /><circle cx="112" cy="103" r="3" class="radar-point" /><circle cx="103" cy="105" r="3" class="radar-point" /><circle cx="97" cy="105" r="3" class="radar-point" /><circle cx="94" cy="101" r="3" class="radar-point" /><circle cx="95" cy="96" r="3" class="radar-point" />
+                        <text x="100" y="12" text-anchor="middle" class="radar-label" style="font-weight:bold; fill:#b67e75">日料(13)</text>
+                        <text x="175" y="45" text-anchor="start" class="radar-label">湘菜(3)</text>
+                        <text x="190" y="120" text-anchor="middle" class="radar-label">西餐(2)</text>
+                        <text x="145" y="185" text-anchor="middle" class="radar-label">江浙菜(1)</text>
+                        <text x="55" y="185" text-anchor="middle" class="radar-label">火锅(1)</text>
+                        <text x="10" y="120" text-anchor="middle" class="radar-label">粤菜(1)</text>
+                        <text x="25" y="45" text-anchor="end" class="radar-label">云南菜(1)</text>
+                    </svg>
+                </div>
             </div>
-            
-            <div id="row-4" class="header-row header-loc">
-                在东京羽田机场
+            <div class="niu-memory-card p5-up delay-5">
+                <div class="niu-text-col">
+                    <div class="niu-date">📅 2月16日</div>
+                    <div class="niu-title">今年第一次吃牛小灶</div>
+                    <div class="niu-desc">彼时的你<br>会想到在接下来的日子里<br>吃了 <span class="big-red">20次</span> 吗？</div>
+                </div>
+                <div class="niu-img-box popup-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1046/1046771.png" alt="牛小灶">
+                </div>
             </div>
-            <div id="row-5" class="header-row header-loc">
-                见到了今年第一面
-            </div>
+            <div class="next-arrow" onclick="goToPage(6)">🎉</div>
         </div>
-
-        <div id="chat-container"></div>
-
-        <div class="footer-bar">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
-            <div class="input-mock"></div>
-            <svg class="icon" viewBox="0 0 24 24" style="margin-right:8px"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8-8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
-            <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </div>
-
-        <div id="call-banner">
-            <div class="banner-avatar"></div>
-            <div class="banner-info">
-                <div class="banner-name">🐮🍺🈚️❤️‍🔥🤔 8.31</div>
-                <div class="banner-status">邀请你语音通话...</div>
-            </div>
-            <div class="banner-actions">
-               <!-- 拒绝 -->
-<div class="action-circle bg-red" onclick="handleCall('reject')">
-    <img class="phone-icon-img" src="./img/拒绝.png" alt="挂断">
-</div>
-
-<!-- 接听 -->
-<div class="action-circle bg-green" onclick="handleCall('accept')">
-    <img class="phone-icon-img" src="./img/接听.png" alt="接听">
-</div>
-            </div>
-        </div>
-    <div id="manual-next" class="gentle-next" onclick="goToPage2()">
-    下一页
-</div>
     </section>
 
-    <section id="page-2" class="page">
-        <div class="stats-container">
-            <div class="stat-card card-1">
-                <div class="card-icon">🗺️</div>
-                <div class="card-info">
-                    <div class="card-label">今年一起去了</div>
-                    <div class="card-value  card-highlight">8 个城市</div>
+    <section id="page-6" class="page">
+        <div class="container-responsive">
+            <div class="p6-header">
+                <div class="p6-title p6-up">2025年</div>
+                <div class="p6-sub p6-up delay-1">
+                    我们跨越距离，在 <span class="highlight-big">7</span> 个月里<br>
+                    一共见面了 <span class="highlight-big">26</span> 天，离<span class="highlight-big">64</span>天还差<span class="highlight-big">38</span>天
+                </div>
+                <div class="p6-sub p6-up delay-2">
+                    感谢你 因为有你<br>温暖了<span class="highlight-big">四季</span><br>谢谢你 因为有你 <br> <span class="highlight-big">六时</span>更美丽
                 </div>
             </div>
-
-             <div class="stat-card card-2">
-                <div class="card-icon">❄️</div>
-                <div class="card-info">
-                    <div class="card-label">一路向北，最远抵达</div>
-                    <div class="card-value card-highlight">日本札幌</div>
-                </div>
+            <div class="p6-calendar-wrapper">
+                <div id="year-grid" class="p6-calendar-box p6-fade-in delay-3"></div>
             </div>
-
-            <div class="stat-card card-3">
-                <div class="card-icon">🇭🇰</div>
-                <div class="card-info">
-                    <div class="card-label">最常去的地方</div>
-                    <div class="card-value card-highlight">中国香港</div>
-                </div>
-                  <div id="3timeshk" class="cheeky-comment">
-                今年在香港见了3次<br>是对它有很特别的感情吗？
+            <div class="p6-footer p6-up delay-4">
+                <div class="footer-line">每一颗亮起的点</div>
+                <div class="footer-line">都是闪闪发光的日子 ✨</div>
             </div>
-            </div>
+            <div class="next-arrow" onclick="goToPage(7)">👇</div>
         </div>
+    </section>
 
-        <div class="suitcase-wrapper">
-            <div class="handle-bar"></div>
-           <div class="suitcase-body">
-                <div class="suitcase-stripe stripe-left"></div>
-                <div class="suitcase-stripe stripe-right"></div>
-                <div class="hand-grip"></div>
-                <div class="corner c-tl"></div>
-                <div class="corner c-tr"></div>
-                <div class="corner c-bl"></div>
-                <div class="corner c-br"></div>
-
-                <div class="sticker sticker-1">
-                    <img src="./img/函馆.png" alt="函馆" >
+    <section id="page-7" class="page">
+        <div class="container-responsive">
+            
+            <div class="p7-map-area">
+                <svg class="p7-map-svg" viewBox="0 0 350 400">
+                    <path class="china-map-outline" d="M 180 40 L 220 60 L 210 120 L 240 180 L 230 250 L 190 280 L 150 270 L 140 220 L 160 150 L 150 80 Z" />
                     
+                    <text x="200" y="75" class="map-label p7-fade-in delay-1">北京</text>
+                    <circle cx="200" cy="80" r="3" fill="#8fa0a5" class="p7-fade-in delay-1" />
+                    
+                    <text x="145" y="260" class="map-label p7-fade-in delay-1">深圳</text>
+                    <circle cx="180" cy="260" r="3" fill="#8fa0a5" class="p7-fade-in delay-1" />
+
+                    <text x="200" y="290" class="map-label label-hk p7-fade-in delay-1">香港</text>
+                    <circle cx="185" cy="275" r="4" fill="#b67e75" class="p7-fade-in delay-1" />
+
+                    <path d="M 200 80 Q 240 180 185 275" class="route-line flight-path" />
+                    <path d="M 180 260 L 185 275" class="route-line metro-path" />
+
+                    <g class="moving-obj" id="plane-obj">
+                        <text x="-12" y="5" font-size="24">✈️</text>
+                    </g>
+                    <g class="moving-obj" id="metro-obj">
+                        <circle cx="0" cy="0" r="6" fill="#585c5f" />
+                    </g>
+
+                    <text x="173" y="285" class="meet-heart">❤️</text>
+                </svg>
+            </div>
+
+            <div class="p7-text-content">
+                <div class="p7-title p7-up delay-4">年度最疯狂的决定</div>
+                
+                <div class="p7-time p7-up delay-5">
+                    发生在：<br>我们因老折私联前一天的第 <span class="highlight-big">464</span> 天
                 </div>
-                <div class="sticker sticker-2">
-                    <img src="./img/札幌.jpg" alt="札幌">
+
+                <div class="p7-body p7-up delay-6">
+                    这一天，我因冲动飞往香港。<br>
+                    谢谢你，接住了我的临时起意。
                 </div>
-                <div class="sticker sticker-3">
-                     <img src="./img/小樽.jpg" alt="小樽">
+
+                <div class="p7-quote-box p7-up delay-7">
+                    <div class="p7-line">感谢你成为我疯狂计划里的</div>
+                    <div class="p7-line">那个<span class="highlight-red">“定数”</span>。</div>
                 </div>
-                <div class="sticker sticker-4">
-                    <img src="./img/东京.png" alt="东京">
-                </div>
-                <div class="sticker sticker-5">
-                    <img src="./img/广州.PNG" alt="广州">
-                </div>
-                <div class="sticker sticker-6">
-                    <img src="./img/深圳.JPG" alt="深圳">
-                </div>
-                <div class="sticker sticker-7">
-                    <img src="./img/香港.PNG" alt="香港">
-                </div>
-                <div class="sticker sticker-8">
-                    <img src="./img/北京.PNG" alt="Icon">
+
+                <div class="p7-sub p7-up delay-8">
+                    见 SVT 是冲动，<br>但见你，是无需思考的默认选项。
                 </div>
             </div>
+
+            <div class="next-arrow" onclick="alert('全剧终，明年见！')">🔚</div>
         </div>
     </section>
 
-    <section id="page-3" class="page">
-        
-        <div id="danmu-layer"></div>
-
-        <div class="identity-container">
-            
-            <div class="page3-header">
-                <div class="p3-main-text">今年有<span>8</span>天<br>在 <span style="font-family:'Times New Roman'">02:59</span> 还在聊天</div>
-                <div class="p3-sub-text">点击查看 02:59 分的吴心怡身份 👇</div>
-            </div>
-
-            <div class="grid-box" id="grid-box">
-                </div>
-
-           <div style="margin-top: 30px; font-size: 24px; cursor: pointer;"
-            onclick="goToPage4()">👇</div>
-        </div>
-
-        <div id="chat-modal" onclick="closeModal()">
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <div class="wx-header">
-                    <span id="modal-title"></span>
-                    <span class="wx-close" onclick="closeModal()">×</span>
-                </div>
-                <div class="wx-body" id="modal-body">
-                    </div>
-            </div>
-        </div>
-
-    </section>
-
-    <!-- <section id="page-4" class="page">
-        <div class="p4-container">
-            <div class="p4-text p4-time p4-down">2025年1月15日 17:36 (JST)</div>
-            
-            <div class="p4-text p4-title p4-down">是你今年最累的时候吗</div>
-
-            <div class="video-frame p4-down">
-                <video id="memory-video" src="https://www.w3schools.com/html/mov_bbb.mp4" 
-                       loop muted playsinline webkit-playsinline></video>
-                <div class="video-overlay"></div>
-            </div>
-
-            <div class="p4-text p4-desc p4-down">在台阶上坐着睡着</div>
-
-            <div class="p4-text p4-stat p4-down">
-                <span class="stat-badge">超过 64% 的游客</span>
-            </div>
-
-            <div class="p4-text p4-hint p4-down">红眼航班虽便宜，也要注意休息哦 🛌</div>
-        </div>
-
-        <div class="next-btn" onclick="alert('未完待续...')">
-            <span>👇</span>
-        </div>
-    </section> -->
-    <!-- <section id="page-4" class="page p4-morandi-style">
-        <div class="p4-content-wrapper">
-            <div class="video-frame-morandi p4-down">
-                <video id="memory-video" src="https://www.w3schools.com/html/mov_bbb.mp4" 
-                       loop muted playsinline webkit-playsinline></video>
-                <div class="video-overlay-morandi"></div>
-            </div>
-
-            <div class="p4-text-group">
-                <div class="p4-vertical-date p4-down">
-                    <div class="date-year">2025.</div>
-                    <div class="date-day">1.15</div>
-                    <div class="date-time">17:36 (JST)</div>
-                </div>
-
-                <div class="p4-main-titles">
-                    <div class="p4-title-jp p4-down">是你今年最累的时候吗</div>
-                    <div class="p4-subtitle-jp p4-down">在台阶上坐着睡着</div>
-                </div>
-            </div>
-
-            <div class="p4-footer-info">
-                <div class="p4-stat-text p4-down">
-                    <span class="highlight-red">超过 64% 的游客</span>
-                </div>
-                <div class="p4-hint-text p4-down">红眼航班虽便宜，也要注意休息哦 🛌</div>
-            </div>
-
-        </div>
-        <div class="next-btn-morandi" onclick="alert('未完待续...')">
-            <span>👇</span>
-        </div>
-    </section> -->
-    <section id="page-4" class="page p4-layout-ref">
-        
-        <div class="p4-video-container p4-fade-in">
-            <div class="video-box">
-                <video id="memory-video" src="./img/吴欣怡睡觉.mp4" 
-                       loop muted playsinline webkit-playsinline></video>
-                <div class="video-mask"></div>
-            </div>
-        </div>
-
-        <div class="p4-content-area">
-            
-            <div class="p4-float-zone">
-                <div class="floater f1">💤</div>
-                <div class="floater f2">⏰</div>
-                <div class="floater f3">🛌</div>
-                <div class="floater f4">💤</div>
-            </div>
-
-            <div class="p4-text-col">
-                <div class="p4-date-row p4-slide-up">
-                    <span class="date-big">1月15日</span>
-                    <span class="time-big">17:36（JST）</span>
-                </div>
-
-                <div class="p4-main-q p4-slide-up">是你今年最累的时候吗</div>
-                <div class="p4-desc-row p4-slide-up">在台阶上坐着睡着</div>
-                <div class="p4-stat-row p4-slide-up">
-                    超过 <span class="stat-num">64%</span> 的游客
-                </div>
-
-                <div class="p4-tips p4-slide-up">红眼航班虽便宜，也要注意休息哦</div>
-            </div>
-        </div>
-
-        <div class="next-arrow" onclick="alert('未完待续...')">👇</div>
-
-    </section>
-    <section id="page-5" class="page p5-calendar-ref">
-  <div class="p5-header">
-    <div class="p5-title-main">我们这一年一共在 <span id="month-count">7</span> 个月见过</div>
-    <div class="p5-sub">见面那天，被我偷偷点亮了</div>
-  </div>
-
-  <!-- 12 个月日历网格 -->
-  <div class="p5-grid" id="p5-grid"></div>
-
-  <!-- 下一页箭头 -->
-  <div class="next-arrow" onclick="goToPage6()">👇</div>
-</section>
-<script>
-        // === 调试开关 ===
-        // true: 直接从第二页开始 (方便调试)
-        // false: 正常流程，从聊天记录开始
-         const DEBUG_PAGE_5 =false;
-
-        
-
-        const messages = [
-            { type: 'right', text: '我在 你出门之后直走的休息区', delay: 600 },
-            { type: 'left', text: '托运的还没拿。。', delay: 600 },
-            { type: 'left', text: '崩溃', delay: 600 },
-            { type: 'left', text: '谁能帮我把表填了发了', delay: 600 },
-            { type: 'left', text: '拿行李拿行李', delay: 800 },
-            { type: 'left', text: '嘿嘿', delay: 800 },
-            { type: 'left', text: '别睡了', delay: 1000 },
-            { type: 'left', text: '陪我玩', delay: 1000 },
-            { type: 'right', text: '拿到了吗', delay: 600 },
-        ];
-
-        const chatBox = document.getElementById('chat-container');
-        const callBanner = document.getElementById('call-banner');
-        const toast = document.getElementById('top-toast');
+    <script>
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        function createMsgElement(data) {
-            const div = document.createElement('div');
-            if (data.type === 'quote') {
-                div.className = 'message-row quote';
-                div.innerHTML = `<div class="quote-content">${data.text}</div>`;
-            } else {
-                div.className = `message-row ${data.type}`;
-                div.innerHTML = `
-                    <div class="avatar"></div>
-                    <div class="bubble">${data.text}</div>
-                `;
+        // 见面日期
+        const meetDates = [
+            "1-15", "1-16", "1-17", "1-18", "1-19", "1-20", "1-21",
+            "2-1", "2-2", "2-14", "2-15","2-16",
+            "4-16", "4-17", "4-18", "4-19", "4-20","4-21",
+            "5-4", "5-5",
+            "9-28", "9-29", "9-30", "10-1",
+            "12-7", "12-8",
+        ];
+
+        // 页面跳转
+        function goToPage(pageNum) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById(`page-${pageNum}`);
+            if (target) {
+                target.classList.add('active');
+                if (pageNum === 5) setTimeout(playPage5Animation, 100);
+                if (pageNum === 6) setTimeout(playPage6Animation, 100);
+                if (pageNum === 7) setTimeout(playPage7Animation, 100);
             }
-            return div;
         }
 
-        // --- 第一页主流程 ---
-        async function playAnimation() {
-            await wait(500);
-            for (let msg of messages) {
-                const el = createMsgElement(msg);
-                chatBox.appendChild(el);
-                void el.offsetWidth;
-                el.classList.add('show');
-                chatBox.scrollTop = chatBox.scrollHeight;
-                await wait(msg.delay);
-            }
-            await wait(1500);
-            callBanner.classList.add('active');
-        }
-
-        // --- 第二页动效 ---
-        async function playPage2Animation() {
-            // 1. 行李箱弹起
-           
-            // 1. 行李箱弹起
-            document.querySelector('.suitcase-wrapper').classList.add('show');
+        // P5 动画
+        async function playPage5Animation() {
+            document.querySelectorAll('.p5-header .p5-up').forEach(el => el.classList.add('show'));
             await wait(800);
-            
-            // 2. 贴纸疯狂贴上去 (快速连击)
-            // 第一波：基础
-            document.querySelector('.sticker-1').classList.add('show');
-            document.querySelector('.sticker-2').classList.add('show');
-            await wait(200);
-            
-            // 第二波：中间层
-            document.querySelector('.sticker-4').classList.add('show');
-            document.querySelector('.sticker-5').classList.add('show');
-            document.querySelector('.sticker-8').classList.add('show');
-            await wait(300);
-
-            // 第三波：顶层覆盖
-            document.querySelector('.sticker-6').classList.add('show');
-            document.querySelector('.sticker-7').classList.add('show');
-            await wait(300);
-
-            // 最后一贴：年度红色标签
-            document.querySelector('.sticker-3').classList.add('show');
-            
-            await wait(600);
-
-            // 3. 卡片开始浮现... (后面的代码不变)
-            document.querySelector('.card-1').classList.add('show');
-            // ...
-            // 3. 卡片
-            document.querySelector('.card-1').classList.add('show');
-            await wait(600);
-            document.querySelector('.card-2').classList.add('show');
-            await wait(600);
-            document.querySelector('.card-3').classList.add('show');
-
-            await wait(400); 
-            
-            document.querySelector('.cheeky-comment').classList.add('show');
-            await playTypewriter('3timeshk', 80);
-
-            await wait(5000);                 // 留 2 秒给用户看完
-goToPage3();                      // 调用下方已写好的跳转函数
-}
-          
-
-        // --- 页面跳转 ---
-        function goToPage2() {
-            const page1 = document.getElementById('page-1');
-            const page2 = document.getElementById('page-2');
-            page1.classList.add('leave');
-            page2.classList.add('active');
-            setTimeout(() => {
-                playPage2Animation();
-            }, 500);
-        }
-        function goToPage3() {
-           
-            const page2 = document.getElementById('page-2');
-             const page3 = document.getElementById('page-3');
-            page2.classList.add('leave');
-            page3.classList.add('active');
-            setTimeout(() => {
-                playPage3Animation();
-            }, 500);
+            document.querySelector('.radar-box').classList.add('show');
+            await wait(1200);
+            document.querySelector('.niu-memory-card').classList.add('show');
         }
 
-
-        // --- 交互逻辑 ---
-        window.handleCall = function(action) {
-            callBanner.classList.remove('active');
-            let text = action === 'accept' ? "通话已接通" : "通话已拒绝";
-            setTimeout(() => {
-                toast.innerText = text;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            }, 300);
-            setTimeout(() => {
-    document.getElementById('manual-next').classList.add('show');
-}, 800);
-            // 第一页标题动画
-            setTimeout(async () => {
-    /* 1. 新的第 1 行：日期 + 图标 */
-    document.getElementById('row-3').classList.add('active');
-    await wait(300);
-
-    /* 2. 分隔线 */
-   
-
-    /* 3. 新的第 3 行：引号文案 + 打字机 */
-    document.querySelector('.header-row-1').classList.add('active');
-    await playTypewriter('type-target', 80);
-    await wait(500);
-
-    /* 4. 地点行 */
-    document.getElementById('row-4').classList.add('active');
-    await wait(200);
-    document.getElementById('row-5').classList.add('active');
-    await wait(200);
-
-    /* 5. 按钮淡淡出现（如果你保留） */
-    document.getElementById('manual-next').classList.add('show');
-
-    /* 6. 自动跳转（如保留） */
-  
-}, 600);
-        };
-
-        
-        // --- 打字机工具 ---
-       // --- 增强版打字机：支持换行 ---
-        async function playTypewriter(elementId, speed = 100) {
-            const el = document.getElementById(elementId);
-            // 1. 获取文本，innerText 会把 <br> 转换为换行符 \n
-            const text = el.innerText; 
-            el.innerHTML = ''; // 清空内容
-            
-            // 2. 逐字处理
-            for(let char of text) {
-                // 如果检测到换行符，插入 <br> 标签
-                if (char === '\n') {
-                    el.appendChild(document.createElement('br'));
-                } else {
-                    // 普通字符包裹在 span 中
-                    const span = document.createElement('span');
-                    span.innerText = char;
-                    span.className = 'char-span';
-                    el.appendChild(span);
-                    
-                    // 稍微延迟一点点加 show 类，确保动画生效
-                    setTimeout(() => span.classList.add('show'), 10);
+        // P6 日历生成
+        function renderCalendar() {
+            const container = document.getElementById('year-grid');
+            if(!container) return;
+            container.innerHTML = ''; 
+            const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            for (let m = 0; m < 12; m++) {
+                const monthNum = m + 1;
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month-block';
+                const title = document.createElement('div');
+                title.className = 'month-label';
+                title.innerText = monthNum + '月';
+                monthDiv.appendChild(title);
+                const daysDiv = document.createElement('div');
+                daysDiv.className = 'days-grid';
+                for (let d = 1; d <= daysInMonth[m]; d++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'day-dot';
+                    const dateKey = `${monthNum}-${d}`;
+                    if (meetDates.includes(dateKey)) dot.classList.add('met');
+                    daysDiv.appendChild(dot);
                 }
-                // 等待打字间隔
-                await wait(speed); 
+                monthDiv.appendChild(daysDiv);
+                container.appendChild(monthDiv);
             }
         }
-        // --- 启动逻辑 ---
-        const nightMessages = [
-            '晚安',
- '玩到这个点',
- '非常顺利',
- '下来准备登机咯',
- '[呲牙][流泪][呲牙][流泪][呲牙][流泪][呲牙][流泪][呲牙][流泪][呲牙][流泪][呲牙][流泪][呲牙]',
- '恋爱吸毒依然被溺爱',
- '我真的完蛋了',
- '落地咯',
- '今天睡前献给了杯杯',
- '天怎么就亮了',
- '我有什么知识可以分享的。',
- '像37之子',
- '不行了',
- '是圣诞树',
- '我要哭了我不要回香港……',
- '要死',
- '把你的yg味收收',
- '我决定*',
- '我不活啦',
- '唉',
- '不准磕了',
- '我不谈恋爱每个月就能省600两年就能省一个iphone17promax1tb',
- '牛不牛',
- '虽然说的是女同担我觉得很有对男同有点像',
- '回南天真是太坏了',
- '老折cha被设置为18+',
- '笑死我了',
- '港币已跌破0.9大关我跳楼了',
- '她怎么睡床尾',
- '洗澡去',
- '尼玛的',
- '很吉利',
- '你是。',
- '[呲牙][呲牙][呲牙][呲牙]',
- '弯恋直之歌',
- '明天起来要写report*2 剪视频*1',
- '不说话',
- '一路平安',
- '即日起退出后期这个赛道',
- '好有才',
- '批准',
- '好饱满',
- '你爸妈好一对郎貌女貌',
- '哦哦ok',
- '有点想吐',
- '睡觉吧孩子',
- '破古西破',
- '好了睡觉',
- '快睡吧',
- '什么奶茶',
- '我天呢',
- '嗯。。。',
- '但是比rmb买便宜多了',
- '明天再说',
- '寝之',
- '再也不会给裤子做缝合手术',
- '但不知道为啥感觉不太舒服。。。',
- '爱你',
- '你后任在哪呢',
- '睡不着啊啊啊啊',
- '如何',
- '睡觉觉',
- '卧槽真睡觉了',
- '只是两只无辜的宝宝',
- '时间的小偷',
- '赞哦',
- 'ok',
- '呃呃呃',
- '这我小时候我爸给我投的地产',
- '情有可原啊！意料之中啊！',
- '好无聊。。，，',
- '真年轻啊！',
- '卧槽怎么能发了',
- '掉马了',
- '就是喜剧的内核是悲剧的感觉。。。',
- '还是算了哈！。',
- 'ok',
- '太坏了',
- '如何',
- '你骂她',
- '包养我',
- '只想让他们都去死',
- 'offer么爱发不发',
- '不会放弃去🇯🇵看花火大会的',
- '我的草头之前出掉了',
- '朝阳区王安宇给我留下的阴影有点重了',
- '行',
- '如此温情',
- '1',
- '这个看一次笑一次',
- '松露这两天给我室友气得',
- '谢谢',
- '岩石的',
- '怎么办 我现在满脑子都是yellow yellow',
- '审美顶级啊',
- '嗯嗯',
- '好好玩',
- '[憨笑]',
- '今晚想东京',
- '要不剪个波波头得了',
-        ];
-// === 1. 九宫格数据配置 (你可以在这里修改身份和聊天记录) ===
-        // title: 身份名称
-        // icon: emoji或者图片
-        // chats: 对应的聊天记录数组
-        const identities = [
-            {
-                title: "工作党", icon: "💼",
-                chats: [
-                    { type: 'time', text: '2025年9月27日 02:58' },
-                     { type: 'left', text: '2号3号可以请假' },
-                     { type: 'left', text: '九月工资得拿满才行' },
-                     { type: 'right', text: '2号请如何' },
-                     { type: 'right', text: '我2号晚上回广州' },
-                     { type: 'right', text: '计划' },
-                     { type: 'time', text: '2025年9月27日 02:59' },
-                    { type: 'right', text: '那我自己去逛华强北' },
-                    { type: 'left', text: '也不一定请' },
-                    { type: 'left', text: '我可以用漏打卡。' },]
-                
-            },
-            {
-                title: "逆子妈", icon: "🐱",
-                chats: [
-                    { type: 'time', text: '2025年12月30日 02:59' },
-                    { type: 'left', text: '可爱死了' },
-                    { type: 'left', text: '我家逆子又大半夜在追逐战' },
-                    { type: 'left', text: '就不能躺我怀里睡觉吗' },
-                    
-                ]
-            },
-            {
-                title: "和睦", icon: "💎",
-                chats: [
-                    { type: 'time', text: '2025年3月3日 02:24' },
-                     { type: 'right', text: '我去算一下我跟宝石盒的合盘' },
-                     { type: 'right', text: '如果分数比较高我就明早yellow一下' },
-                    { type: 'time', text: '2025年3月3日 02:59' },
-                    { type: 'left', text: '我也要测' },
-                    { type: 'left', text: '你不是睡觉了吗' },
-                ]
-            },
-            {
-                title: "男宝妈", icon: "🤱",
-                chats: [
-                    { type: 'time', text: '2025年4月25日 02:57' },
-                    { type: 'left', text: '打骂就这样：[呲牙][胜利]' },
-                    { type: 'left', text: '好磕啊' },
-                    { type: 'left', text: '我尼玛的' },
-                    { type: 'left', text: '不要叫我男宝妈' },
-                    { type: 'right', text: '看不懂' },
-                    { type: 'left', text: '哎你不懂' },
-                    { type: 'left', text: '我在讲这件事' },
-                    { type: 'left', text: '它充满了遗憾的美学' },
-                    { type: 'right', text: '不懂' },
-                    { type: 'time', text: '2025年4月25日 02:59' },
-                    { type: 'right', text: '我的人生不能有遗憾' },
-                    { type: 'left', text: '我没有在维护鸡韩币' },
-                    { type: 'right', text: '我不喜欢遗憾' },
-                    { type: 'left', text: '跟你料不到一个壶里！' },
-                    { type: 'right', text: '我用马桶' },
-                ]
-            },
-             {
-                title: "抽空批奏折的皇帝", icon: "📕",
-                chats: [
-                    { type: 'time', text: '2025年12月29日 02:54' },
-                    { type: 'right', text: ' [流泪][流泪][流泪][流泪]' },
-                    { type: 'right', text: ' 好幸福' },
-                    { type: 'right', text: '[图片]' },
-                    { type: 'time', text: '2025年12月29日 02:59' },
-                    { type: 'left', text: '哎呀宝宝' },
-                 
-                ]
-            },
-            {
-                title: "江苏考生", icon: "📚",
-                chats: [
-                    { type: 'time', text: '2025年6月7日 02:58' },
-                    { type: 'left', text: '这是他写贾府 千红一窟 万艳同杯' },
-                    { type: 'right', text: '我操这么有文化' },
-                    { type: 'left', text: '写的是景色 但实际上是谐音' },
-                    { type: 'left', text: ' 我操你睡吧' },
-                    { type: 'time', text: '2025年6月7日 02:59' },
-                    { type: 'right', text: '好牛啊我操' },
-                    { type: 'right', text: '好羡慕你们文科生这么有文化' },
-                    { type: 'left', text: '因为高考要考。' },
-                    { type: 'left', text: ' 快他妈的睡吧。' },
-                ]
-            },
-            {
-                title: "宾度姐", icon: "🐥",
-                chats: [
-                    { type: 'time', text: '2025年3月21日 02:59' },
-                    { type: 'left', text: '你怎么知道我两对产品猛猛麦明天还要见宾度哥哥' },
-                    { type: 'left', text: '这是真实的吗' },
-                  
-                ]  
-            },
-            {
-                title: "折戟", icon: "👨‍❤️‍💋‍👨",
-                chats: [
-                    { type: 'time', text: '2025年5月31日 02:59' },
-                    { type: 'left', text: '卧槽qyy又回春了' },
-                    { type: 'left', text: ' 爱' },
-                    { type: 'left', text: '文俊辉咋也这么漂亮' },
-                    { type: 'left', text: '你爸妈好一对郎貌女貌' }
-                ]
-            },
-            
-        ];
-        // --- 初始化逻辑 ---
-        // window.onload = function() {
-        //     if (DEBUG_PAGE_3) {
-        //         // 隐藏前两页
-        //         document.getElementById('page-1').classList.remove('active'); document.getElementById('page-1').style.display = 'none';
-        //         document.getElementById('page-2').classList.remove('active'); document.getElementById('page-2').style.display = 'none';
-                
-        //         // 显示第三页
-        //         document.getElementById('page-3').classList.add('active');
-                
-        //         // 启动第三页动画
-        //         setTimeout(() => playPage3Animation(), 100);
-        //     } else {
-        //          playAnimation(); // 正常流程
-        //     }
-        // };
 
-        // --- 第三页核心动画 ---
-  async function playPage3Animation() {
-            initDanmu(); // 启动弹幕
-            
-            // 1. 显示标题
-            document.querySelector('.page3-header').style.opacity = 1;
-            document.querySelector('.page3-header').style.transform = 'translateY(0)';
-            
-            await new Promise(r => setTimeout(r, 500));
-
-           // 2. 依次显示九宫格卡片
-const gridBox = document.getElementById('grid-box');
-identities.forEach((id, index) => {
-  const card = document.createElement('div');
-  card.className = 'id-card';
-  card.innerHTML = `
-    <div class="id-icon">${id.icon}</div>
-    <div class="id-name">${id.title}</div>
-  `;
-  card.onclick = () => showChat(index);
-  gridBox.appendChild(card);
-  setTimeout(() => card.classList.add('show'), index * 100);
-});
-
-// 3. 等最后一张卡片动画结束再显示箭头和自动跳转
-const lastIndex = identities.length - 1;
-setTimeout(() => {
-  // 手动箭头
-  document.querySelector('#page-3 .identity-container > div:last-child').style.opacity = '1';
-  document.querySelector('#page-3 .identity-container > div:last-child').style.pointerEvents = 'auto';
-
-  // 自动跳转（如需要）
-  // 2.5 秒后自动滑到第 4 页
-}, lastIndex * 100 + 600);               // 比最后一张卡片再晚 600 ms
+        // P6 动画
+        async function playPage6Animation() {
+            renderCalendar();
+            document.querySelectorAll('.p6-header .p6-up').forEach(el => el.classList.add('show'));
+            await wait(600);
+            document.getElementById('year-grid').classList.add('show');
+            await wait(800);
+            document.querySelector('.p6-footer').classList.add('show');
+            await wait(400);
         }
 
-        // --- 弹窗逻辑 ---
-        function showChat(index) {
-            const data = identities[index];
-            const modal = document.getElementById('chat-modal');
-            const body = document.getElementById('modal-body');
-            const title = document.getElementById('modal-title');
-            
-            // title.innerText = data.title + " (02:59)";
-            body.innerHTML = ''; // 清空旧内容
-
-            // 生成聊天记录
-            data.chats.forEach(msg => {
-                let html = '';
-                if (msg.type === 'time') {
-                    html = `<div class="time-tip">${msg.text}</div>`;
-                } else {
-                    html = `
-                        <div class="wx-msg ${msg.type}">
-                            <div class="wx-avatar"></div>
-                            <div class="wx-bubble">${msg.text}</div>
-                        </div>
-                    `;
-                }
-                body.innerHTML += html;
-            });
-
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('chat-modal').classList.remove('active');
-        }
-
-        // --- 弹幕生成器 (保持之前逻辑，稍作精简) ---
-        // --- 修正后的弹幕生成器 ---
-        function initDanmu() {
-            const container = document.getElementById('danmu-layer');
-            // 注意：这里要用 nightMessages，不要用 danmuTexts
-            nightMessages.forEach((text, index) => {
-                const el = document.createElement('div');
-                el.classList.add('danmu-item');
-                el.innerText = text;
-                
-                // --- 随机参数配置 ---
-                
-                // 1. 垂直位置 (Top): 5% 到 90% 之间随机
-                let topPos = Math.random() * 90;
-                el.style.top = topPos + '%';
-
-                // 2. 动画时长 (Speed): 15秒 到 30秒 之间随机
-                const duration = 15 + Math.random() * 15; 
-                el.style.animationName = 'floatLeft';
-                el.style.animationDuration = duration + 's';
-                el.style.animationTimingFunction = 'linear';
-                el.style.animationIterationCount = 'infinite';
-
-                // 3. 动画延迟 (Delay): 负数延迟可以让动画一开始就铺满屏幕
-                const delay = -1 * Math.random() * 20;
-                el.style.animationDelay = delay + 's';
-
-                // 4. 字体大小微调
-                const fontSize = 12 + Math.random() * 6;
-                el.style.fontSize = fontSize + 'px';
-                
-                // 5. 透明度微调
-                el.style.opacity = 0.2 + Math.random() * 0.4;
-
-                // --- 点击交互事件 ---
-                el.onclick = function(e) {
-                    e.stopPropagation(); // 阻止冒泡
-                    this.classList.toggle('paused'); // 切换暂停
-                };
-
-                container.appendChild(el);
-            });
-        }
-  // --- 第四页动效 (右对齐版) ---
-        async function playPage4Animation() {
-            // 1. 视频浮现
-            document.querySelector('.p4-video-container').classList.add('show');
-            const video = document.getElementById('memory-video');
-            try { video.currentTime = 0; video.play(); } catch (e) {}
+        // P7 动画
+        async function playPage7Animation() {
+            // 1. 地图浮现
+            document.querySelectorAll('.p7-map-area .p7-fade-in').forEach(el => el.classList.add('show'));
             await wait(800);
 
-            // 2. 文字依次滑入
-            // 获取所有带 p4-slide-up 的元素
-            const texts = document.querySelectorAll('.p4-text-col .p4-slide-up');
+            // 2. 启动动画 (修正坐标后)
+            const plane = document.getElementById('plane-obj');
+            const metro = document.getElementById('metro-obj');
             
+            // 飞机：使用CSS animation
+            plane.style.animation = "moveAlongPath 2.5s cubic-bezier(0.45, 0, 0.55, 1) forwards";
+            metro.style.animation = "moveAlongPath 2.5s cubic-bezier(0.45, 0, 0.55, 1) forwards";
+
+            await wait(2500);
+
+            // 3. 汇聚
+            document.querySelector('.meet-heart').classList.add('show');
+            await wait(600);
+
+            // 4. 文字
+            const texts = document.querySelectorAll('.p7-text-content .p7-up');
             for (let i = 0; i < texts.length; i++) {
                 texts[i].classList.add('show');
-                // 每个文字间隔 500ms 出现
-                await wait(500);
+                await wait(600);
             }
         }
 
-        // --- 跳转函数 ---
-       // 唯一正确的 3→4 滑动函数
-        function goToPage4() {
-            const p2 = document.getElementById('page-2');
-            const p3 = document.getElementById('page-3');
-            const p4 = document.getElementById('page-4');
-
-            p2.style.display = 'none';
-            p3.style.transition = 'transform 0.8s ease, opacity 0.8s';
-            p3.style.transform  = 'translateY(-100%)';
-            p3.style.opacity    = '0.5';
-
-            setTimeout(() => {
-                p3.classList.remove('active');
-                p4.classList.add('active');
-                setTimeout(() => playPage4Animation(), 300); // 第四页动画
-            }, 800);
-        }
-        // 临时调试用：直接显示第四页
-        // window.onload = function() {
-        //     document.getElementById('page-1').classList.add('active');
-        //     document.getElementById('page-2').style.display = 'none';
-        //     document.getElementById('page-3').style.display = 'none';
-        //     document.getElementById('page-4').classList.add('active');
-        //     setTimeout(playPage4Animation, 500);
-        // }
-        /* ========== 第五页数据 ========== */
-// 1 代表见过，0 代表没见过
-/* ===== 测试数据：仅 1 月前 7 天点亮 ===== */
-const meetRecord = [
-  [1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 1 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],       // 2 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 6 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 7 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 8 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 9 月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //10月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //11月
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]  //12月
-];
-
-/* ========== 渲染第五页 ========== */
-function renderCalendar() {
-  const grid = document.getElementById('p5-grid');
-  const monthCount = meetRecord.filter(days => days.includes(1)).length;
-  document.getElementById('month-count').textContent = monthCount;
-
-  meetRecord.forEach((days, mIndex) => {
-    const card = document.createElement('div');
-    card.className = 'month-card';
-    card.innerHTML = `
-      <div class="month-name">${mIndex + 1}月</div>
-      <div class="days"></div>
-    `;
-    const daysBox = card.querySelector('.days');
-   days.forEach((d, dIndex) => {
-  const dot = document.createElement('div');
-  dot.className = 'day' + (d === 1 ? ' met' : '');   // 这里必须是 1 才加 met
-  daysBox.appendChild(dot);
-});
-    grid.appendChild(card);
-    // stagger 出现
-    setTimeout(() => card.classList.add('show'), mIndex * 120);
-  });
-}
-
-/* ========== 第五页入口 ========== */
-async function playPage5Animation() {
-  renderCalendar();
-  // 可选：自动跳转
-  const totalMs = meetRecord.length * 120 + 800;
-  setTimeout(() => goToPage6(), totalMs);
-}
-
-/* ========== 唯一 5→6 跳转 ========== */
-function goToPage6() {
-  const p5 = document.getElementById('page-5');
-  const p6 = document.getElementById('page-6');   // 你后面加的第6页
-  p5.style.transition = 'transform .8s ease, opacity .8s';
-  p5.style.transform = 'translateY(-100%)';
-  p5.style.opacity = '0.5';
-  setTimeout(() => {
-    p5.classList.remove('active');
-    p6.classList.add('active');
-    // 如果第6页有动画再调用
-    // setTimeout(() => playPage6Animation(), 300);
-  }, 800);
-}
-
-window.onload = function () {
-    if (DEBUG_PAGE_5) {          // 注意：你变量叫 DEBUG_PAGE_4，不是 3
-        // 隐藏前两页
-        document.getElementById('page-1').classList.remove('active');
-        document.getElementById('page-1').style.display = 'none';
-        document.getElementById('page-2').classList.remove('active');
-        document.getElementById('page-2').style.display = 'none';
-        document.getElementById('page-3').classList.remove('active');
-        document.getElementById('page-3').style.display = 'none';
-        // 显示第三页
-        document.getElementById('page-4').classList.add('active');
-      document.getElementById('page-4').style.display = 'none';
-       document.getElementById('page-5').classList.add('active');
-        // 启动第三页动画
-        // setTimeout(() => playPage3Animation(), 100);
-    } else {
-        playAnimation(); // 正常流程
-    }
-};
-</script>
+        window.onload = function() {
+            goToPage(6); // 测试 P7
+        };
+    </script>
 </body>
 </html>
