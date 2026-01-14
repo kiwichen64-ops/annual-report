@@ -112,8 +112,8 @@
         .message-row { display: flex; margin-bottom: 15px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; } .message-row.show { opacity: 1; transform: translateY(0); }
         .avatar { width: 42px; height: 42px; border-radius: 6px; background-size: cover; margin: 0 10px; flex-shrink: 0; }
         .bubble { max-width: 75%; padding: 10px 14px; border-radius: 6px; font-size: 16px; line-height: 1.5; position: relative; }
-        .message-row.left .avatar { background-image: url('./img/wxy微信头像.jpg'); margin-left: 0;} .message-row.left .bubble { background: #fff; } .message-row.left .bubble::before { content:''; position:absolute; left:-8px; top:14px; border:4px solid transparent; border-right-color:#fff; }
-        .message-row.right { justify-content: flex-end; } .message-row.right .avatar { background-image: url('./img/我的微信头像.jpg'); margin-right: 0; order: 2;} .message-row.right .bubble { background: var(--wechat-green); order: 1;} .message-row.right .bubble::after { content:''; position:absolute; right:-8px; top:14px; border:4px solid transparent; border-left-color:var(--wechat-green); }
+        .message-row.left .avatar { background-image: url('wxy微信头像.jpg'); margin-left: 0;} .message-row.left .bubble { background: #fff; } .message-row.left .bubble::before { content:''; position:absolute; left:-8px; top:14px; border:4px solid transparent; border-right-color:#fff; }
+        .message-row.right { justify-content: flex-end; } .message-row.right .avatar { background-image: url('我的微信头像.jpg'); margin-right: 0; order: 2;} .message-row.right .bubble { background: var(--wechat-green); order: 1;} .message-row.right .bubble::after { content:''; position:absolute; right:-8px; top:14px; border:4px solid transparent; border-left-color:var(--wechat-green); }
 
         /* 底部栏适配 */
         .footer-bar { 
@@ -134,7 +134,7 @@
             transform: translateY(-200%); transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 999; 
         }
         #call-banner.active { transform: translateY(0); }
-        .banner-avatar { width: 48px; height: 48px; border-radius: 8px; background-image: url('./img/wxy微信头像.jpg'); background-size: cover; margin-right: 12px; } .banner-info { flex: 1; } .banner-name { font-weight: 600; } .banner-status { font-size: 13px; opacity: 0.7; } .banner-actions { display: flex; gap: 5px; } .action-circle { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center;margin-right: 25px;  } .bg-red { background: #ff3b30; } .bg-green { background: #34c759; } .phone-icon { width: 20px; height: 3px; background: white; border-radius: 2px; }
+        .banner-avatar { width: 48px; height: 48px; border-radius: 8px; background-image: url('wxy微信头像.jpg'); background-size: cover; margin-right: 12px; } .banner-info { flex: 1; } .banner-name { font-weight: 600; } .banner-status { font-size: 13px; opacity: 0.7; } .banner-actions { display: flex; gap: 5px; } .action-circle { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center;margin-right: 25px;  } .bg-red { background: #ff3b30; } .bg-green { background: #34c759; } .phone-icon { width: 20px; height: 3px; background: white; border-radius: 2px; }
 
         /* Toast 适配 */
         #top-toast { 
@@ -377,8 +377,8 @@
         .wx-msg { display: flex; margin-bottom: 15px; }
         .wx-msg.right { justify-content: flex-end; }
         .wx-avatar { width: 36px; height: 36px; border-radius: 4px; background-color: #ddd; flex-shrink: 0; background-size: cover; }
-        .wx-msg.left .wx-avatar { margin-right: 10px; background-image: url('./img/wxy微信头像2.jpg'); }
-        .wx-msg.right .wx-avatar { margin-left: 10px; order: 2; background-image: url('./img/我的微信头像2.jpg'); }
+        .wx-msg.left .wx-avatar { margin-right: 10px; background-image: url('wxy微信头像2.jpg'); }
+        .wx-msg.right .wx-avatar { margin-left: 10px; order: 2; background-image: url('我的微信头像2.jpg'); }
         .wx-bubble { 
             max-width: 70%; padding: 9px 12px; border-radius: 4px; font-size: 15px; line-height: 1.4; position: relative; color: #000;
         }
@@ -599,12 +599,12 @@
             <div class="banner-actions">
                <!-- 拒绝 -->
 <div class="action-circle bg-red" onclick="handleCall('reject')">
-    <img class="phone-icon-img" src="./img/拒绝.png" alt="挂断">
+    <img class="phone-icon-img" src="拒绝.png" alt="挂断">
 </div>
 
 <!-- 接听 -->
 <div class="action-circle bg-green" onclick="handleCall('accept')">
-    <img class="phone-icon-img" src="./img/接听.png" alt="接听">
+    <img class="phone-icon-img" src="接听.png" alt="接听">
 </div>
             </div>
         </div>
@@ -655,29 +655,29 @@
                 <div class="corner c-br"></div>
 
                 <div class="sticker sticker-1">
-                    <img src="./img/函馆.png" alt="函馆" >
+                    <img src="函馆.png" alt="函馆" >
                     
                 </div>
                 <div class="sticker sticker-2">
-                    <img src="./img/札幌.jpg" alt="札幌">
+                    <img src="札幌.jpg" alt="札幌">
                 </div>
                 <div class="sticker sticker-3">
-                     <img src="./img/小樽.jpg" alt="小樽">
+                     <img src="小樽.jpg" alt="小樽">
                 </div>
                 <div class="sticker sticker-4">
-                    <img src="./img/东京.png" alt="东京">
+                    <img src="东京.png" alt="东京">
                 </div>
                 <div class="sticker sticker-5">
-                    <img src="./img/广州.PNG" alt="广州">
+                    <img src="广州.PNG" alt="广州">
                 </div>
                 <div class="sticker sticker-6">
-                    <img src="./img/深圳.JPG" alt="深圳">
+                    <img src="深圳.JPG" alt="深圳">
                 </div>
                 <div class="sticker sticker-7">
-                    <img src="./img/香港.PNG" alt="香港">
+                    <img src="香港.PNG" alt="香港">
                 </div>
                 <div class="sticker sticker-8">
-                    <img src="./img/北京.PNG" alt="Icon">
+                    <img src="北京.PNG" alt="Icon">
                 </div>
             </div>
         </div>
@@ -776,7 +776,7 @@
         
         <div class="p4-video-container p4-fade-in">
             <div class="video-box">
-                <video id="memory-video" src="./img/吴欣怡睡觉.mp4" 
+                <video id="memory-video" src="吴欣怡睡觉.mp4" 
                        loop muted playsinline webkit-playsinline></video>
                 <div class="video-mask"></div>
             </div>
@@ -1491,4 +1491,5 @@ window.onload = function () {
 };
 </script>
 </body>
+
 </html>
